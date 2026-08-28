@@ -1,5 +1,4 @@
 from playwright.sync_api import sync_playwright
-import re
 
 URL = "https://www.ntebuild.com/codes"
 
@@ -12,40 +11,48 @@ def get_codes():
         print("Ouverture de NTEBuild...")
         page.goto(URL, wait_until="networkidle")
 
-        codes = page.locator("h2").evaluate_all("""
-            headings => {
-                const active = headings.find(
-                    h => h.textContent.trim() === "Active Codes"
-                );
-
-                const expired = headings.find(
-                    h => h.textContent.trim() === "Expired Codes"
-                );
-
-                if (!active || !expired) {
-                    return [];
-                }
-
+        codes = page.locator("h2, h3").evaluate_all("""
+            elements => {
                 const results = [];
+                let active = false;
 
-                let element = active.nextElementSibling;
+                for (const element of elements) {
+                    const text = element.textContent.trim();
 
-                while (element && element !== expired) {
-                    const headings = element.matches("h3")
-                        ? [element]
-                        : Array.from(element.querySelectorAll("h3"));
+                    // Début de la section des codes actifs
+                    if (
+                        element.tagName === "H2" &&
+                        text === "Active Codes"
+                    ) {
+                        active = true;
+                        continue;
+                    }
 
-                    for (const heading of headings) {
-                        const code = heading.textContent
+                    // Fin de la section des codes actifs
+                    if (
+                        element.tagName === "H2" &&
+                        text === "Expired Codes"
+                    ) {
+                        break;
+                    }
+
+                    // Récupération uniquement des H3 de la section Active Codes
+                    if (
+                        active &&
+                        element.tagName === "H3"
+                    ) {
+                        const code = text
                             .replace(/New/g, "")
                             .trim();
 
-                        if (code && !results.includes(code)) {
+                        if (
+                            code &&
+                            /^[A-Za-z0-9]+$/.test(code) &&
+                            !results.includes(code)
+                        ) {
                             results.push(code);
                         }
                     }
-
-                    element = element.nextElementSibling;
                 }
 
                 return results;
@@ -54,20 +61,7 @@ def get_codes():
 
         browser.close()
 
-        # On garde uniquement les éléments qui ressemblent
-        # réellement à des codes NTE.
-        valid_codes = []
-
-        for code in codes:
-            code = code.strip()
-
-            if (
-                re.fullmatch(r"[A-Za-z0-9]+", code)
-                and len(code) >= 4
-            ):
-                valid_codes.append(code)
-
-        return valid_codes
+        return codes
 
 
 if __name__ == "__main__":
