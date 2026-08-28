@@ -25,6 +25,9 @@ jobs:
           playwright install --with-deps chromium
 
       - name: Lancer le scraper
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
         run: |
           python scraper.py
 
