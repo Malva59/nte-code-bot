@@ -11,54 +11,22 @@ def get_codes():
         print("Ouverture de NTEBuild...")
         page.goto(URL, wait_until="networkidle")
 
-        codes = page.locator("h2").evaluate("""
-        headings => {
-            const activeHeading = headings.find(
-                h => h.textContent.trim() === "Active Codes"
-            );
+        codes = page.locator("h3").evaluate_all("""
+            elements => {
+                const codes = [];
 
-            if (!activeHeading) {
-                return [];
-            }
-
-            const results = [];
-            let element = activeHeading.nextElementSibling;
-
-            while (element) {
-                if (
-                    element.tagName === "H2" &&
-                    element.textContent.includes("Expired Codes")
-                ) {
-                    break;
-                }
-
-                if (element.tagName === "H3") {
+                for (const element of elements) {
                     const code = element.textContent
                         .replace(/New/g, "")
                         .trim();
 
                     if (code) {
-                        results.push(code);
+                        codes.push(code);
                     }
                 }
 
-                const innerHeadings = element.querySelectorAll("h3");
-
-                for (const heading of innerHeadings) {
-                    const code = heading.textContent
-                        .replace(/New/g, "")
-                        .trim();
-
-                    if (code && !results.includes(code)) {
-                        results.push(code);
-                    }
-                }
-
-                element = element.nextElementSibling;
+                return codes;
             }
-
-            return results;
-        }
         """)
 
         browser.close()
