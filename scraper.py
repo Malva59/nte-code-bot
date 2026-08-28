@@ -1,44 +1,61 @@
-import requests
-from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
 URL = "https://www.ntebuild.com/codes"
 
 
 def get_codes():
-    response = requests.get(
-        URL,
-        headers={
-            "User-Agent": "Mozilla/5.0"
-        },
-        timeout=20
-    )
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
 
-    response.raise_for_status()
+        print("Ouverture de NTEBuild...")
+        page.goto(URL, wait_until="networkidle")
 
-    soup = BeautifulSoup(response.text, "html.parser")
+        codes = page.locator("h2").filter(has_text="Active Codes").evaluate("""
+        active_heading => {
+            const codes = [];
+            let element = active_heading.nextElementSibling;
 
-    codes = []
+            while (element) {
+                if (
+                    element.tagName === "H2" &&
+                    element.textContent.includes("Expired Codes")
+                ) {
+                    break;
+                }
 
-    # Recherche des codes dans la section Active Codes
-    active_section = soup.find(
-        string=lambda text: text and "Active Codes" in text
-    )
+                const headings = element.querySelectorAll("h3");
 
-    if active_section:
-        section = active_section.parent
+                for (const heading of headings) {
+                    const code = heading.textContent
+                        .replace("New", "")
+                        .trim();
 
-        for element in section.find_all_next():
-            text = element.get_text(strip=True)
+                    if (code) {
+                        codes.push(code);
+                    }
+                }
 
-            if text:
-                codes.append(text)
+                element = element.nextElementSibling;
+            }
 
-    return codes
+            return codes;
+        }
+        """)
+
+        browser.close()
+
+        return codes
 
 
 if __name__ == "__main__":
     codes = get_codes()
 
-    print("Codes trouvés :")
+    print()
+    print("===== CODES NTE TROUVÉS =====")
+
     for code in codes:
         print(code)
+
+    print("=============================")
+    print(f"Total : {len(codes)}")
