@@ -67,3 +67,4 @@ def send_code(code):
 
     response.raise_for_status()
 
+    print(f"[DISCORD] Code envoyé : {code}")
