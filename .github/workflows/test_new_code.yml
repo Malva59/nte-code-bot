@@ -1,0 +1,50 @@
+name: Test New NTE Code
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Récupérer le projet
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dépendances
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Retirer FOGDENGAME de SQLite
+        run: |
+          python -c "import sqlite3; db=sqlite3.connect('data/codes.db'); db.execute(\"DELETE FROM codes WHERE code = 'FOGDENGAME'\"); db.commit(); db.close()"
+
+      - name: Lancer le scraper
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+        run: |
+          python scraper.py
+
+      - name: Sauvegarder la base SQLite
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/codes.db
+
+          if git diff --cached --quiet; then
+            echo "Aucune modification de la base."
+          else
+            git commit -m "Test new NTE code"
+            git push
+          fi
