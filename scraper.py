@@ -40,14 +40,7 @@ def get_codes():
                             .replace(/New/g, "")
                             .trim();
 
-                        // Un code ne contient pas d'espaces
-                        // et contient uniquement lettres/chiffres
-                        if (
-                            code &&
-                            /^[A-Z0-9]+$/.test(code) &&
-                            code.length >= 4 &&
-                            !results.includes(code)
-                        ) {
+                        if (code && !results.includes(code)) {
                             results.push(code);
                         }
                     }
@@ -61,7 +54,20 @@ def get_codes():
 
         browser.close()
 
-        return codes
+        # On garde uniquement les éléments qui ressemblent
+        # réellement à des codes NTE.
+        valid_codes = []
+
+        for code in codes:
+            code = code.strip()
+
+            if (
+                re.fullmatch(r"[A-Za-z0-9]+", code)
+                and len(code) >= 4
+            ):
+                valid_codes.append(code)
+
+        return valid_codes
 
 
 if __name__ == "__main__":
