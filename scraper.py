@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+from database import init_database, is_new_code, save_code
 
 URL = "https://www.ntebuild.com/codes"
 
@@ -11,37 +12,30 @@ def get_codes():
         print("Ouverture de NTEBuild...")
         page.goto(URL, wait_until="networkidle")
 
-        codes = page.locator("h2, h3").evaluate_all("""
-            elements => {
+        codes = page.locator("h2").evaluate_all("""
+            headings => {
+                const active = headings.find(
+                    h => h.textContent.trim() === "Active Codes"
+                );
+
+                const expired = headings.find(
+                    h => h.textContent.trim() === "Expired Codes"
+                );
+
+                if (!active || !expired) {
+                    return [];
+                }
+
                 const results = [];
-                let active = false;
+                let element = active.nextElementSibling;
 
-                for (const element of elements) {
-                    const text = element.textContent.trim();
+                while (element && element !== expired) {
+                    const headings = element.matches("h3")
+                        ? [element]
+                        : Array.from(element.querySelectorAll("h3"));
 
-                    // Début de la section des codes actifs
-                    if (
-                        element.tagName === "H2" &&
-                        text === "Active Codes"
-                    ) {
-                        active = true;
-                        continue;
-                    }
-
-                    // Fin de la section des codes actifs
-                    if (
-                        element.tagName === "H2" &&
-                        text === "Expired Codes"
-                    ) {
-                        break;
-                    }
-
-                    // Récupération uniquement des H3 de la section Active Codes
-                    if (
-                        active &&
-                        element.tagName === "H3"
-                    ) {
-                        const code = text
+                    for (const heading of headings) {
+                        const code = heading.textContent
                             .replace(/New/g, "")
                             .trim();
 
@@ -53,6 +47,8 @@ def get_codes():
                             results.push(code);
                         }
                     }
+
+                    element = element.nextElementSibling;
                 }
 
                 return results;
@@ -65,13 +61,23 @@ def get_codes():
 
 
 if __name__ == "__main__":
+    init_database()
+
     codes = get_codes()
 
     print()
-    print("===== CODES NTE TROUVÉS =====")
+    print("===== VÉRIFICATION DES CODES =====")
+
+    new_codes = []
 
     for code in codes:
-        print(code)
+        if is_new_code(code):
+            print(f"[NEW] Nouveau code : {code}")
+            save_code(code)
+            new_codes.append(code)
+        else:
+            print(f"[OLD] Code déjà connu : {code}")
 
-    print("=============================")
-    print(f"Total : {len(codes)}")
+    print("===================================")
+    print(f"Codes trouvés : {len(codes)}")
+    print(f"Nouveaux codes : {len(new_codes)}")
