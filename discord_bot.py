@@ -15,18 +15,67 @@ def send_code(code):
     }
 
     data = {
-        "content": (
-            "🎁 **NOUVEAU CODE NTE !**\n\n"
-            f"🔑 `{code}`\n\n"
-            "📋 Copiez le code ci-dessus et utilisez-le "
-            "directement dans Neverness to Everness !"
-        )
+        "embeds": [
+            {
+                "title": "🎁 NOUVEAU CODE NTE !",
+                "description": (
+                    "Un nouveau code pour **Neverness to Everness** vient d'être détecté !"
+                ),
+                "fields": [
+                    {
+                        "name": "🔑 Code",
+                        "value": f"```{code}```",
+                        "inline": False
+                    },
+                    {
+                        "name": "🎁 Récompenses",
+                        "value": "Récompenses disponibles en jeu.",
+                        "inline": False
+                    },
+                    {
+                        "name": "⚡ Statut",
+                        "value": "🟢 Code actif",
+                        "inline": True
+                    }
+                ],
+                "footer": {
+                    "text": "NTE Code Bot • Source : NTEBuild"
+                }
+            }
+        ],
+        "components": [
+            {
+                "type": 1,
+                "components": [
+                    {
+                        "type": 2,
+                        "style": 5,
+                        "label": "❓ Comment utiliser",
+                        "url": "https://www.ntebuild.com/codes"
+                    }
+                ]
+            }
+        ]
     }
 
     response = requests.post(
         DISCORD_URL,
         headers=headers,
         json=data,
+        timeout=20
+    )
+
+    response.raise_for_status()
+
+    # Message séparé sous l'embed pour faciliter la copie
+    copy_data = {
+        "content": f"📋 **Code à copier :**\n```{code}```"
+    }
+
+    response = requests.post(
+        DISCORD_URL,
+        headers=headers,
+        json=copy_data,
         timeout=20
     )
 
