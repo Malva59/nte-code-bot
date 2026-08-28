@@ -12,43 +12,46 @@ def get_codes():
         print("Ouverture de NTEBuild...")
         page.goto(URL, wait_until="networkidle")
 
-        codes = page.locator("h2").evaluate_all("""
-            headings => {
-                const active = headings.find(
-                    h => h.textContent.trim() === "Active Codes"
-                );
-
-                const expired = headings.find(
-                    h => h.textContent.trim() === "Expired Codes"
-                );
-
-                if (!active || !expired) {
-                    return [];
-                }
-
+        codes = page.locator("h2, h3").evaluate_all("""
+            elements => {
                 const results = [];
-                let element = active.nextElementSibling;
+                let active = false;
 
-                while (element && element !== expired) {
-                    const headings = element.matches("h3")
-                        ? [element]
-                        : Array.from(element.querySelectorAll("h3"));
+                for (const element of elements) {
+                    const text = element.textContent.trim();
 
-                    for (const heading of headings) {
-                        const code = heading.textContent
+                    if (
+                        element.tagName === "H2" &&
+                        text === "Active Codes"
+                    ) {
+                        active = true;
+                        continue;
+                    }
+
+                    if (
+                        element.tagName === "H2" &&
+                        text === "Expired Codes"
+                    ) {
+                        break;
+                    }
+
+                    if (
+                        active &&
+                        element.tagName === "H3"
+                    ) {
+                        const code = text
                             .replace(/New/g, "")
                             .trim();
 
                         if (
                             code &&
                             /^[A-Za-z0-9]+$/.test(code) &&
+                            code.length >= 4 &&
                             !results.includes(code)
                         ) {
                             results.push(code);
                         }
                     }
-
-                    element = element.nextElementSibling;
                 }
 
                 return results;
