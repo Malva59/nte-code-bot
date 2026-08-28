@@ -5,6 +5,8 @@ import requests
 DISCORD_TOKEN = os.environ["DISCORD_TOKEN"]
 CHANNEL_ID = os.environ["DISCORD_CHANNEL_ID"]
 
+ROLE_ID = "1543027793695088640"
+
 DISCORD_URL = f"https://discord.com/api/v10/channels/{CHANNEL_ID}/messages"
 
 
@@ -15,6 +17,10 @@ def send_code(code):
     }
 
     data = {
+        "content": f"<@&{ROLE_ID}>",
+        "allowed_mentions": {
+            "roles": [ROLE_ID]
+        },
         "embeds": [
             {
                 "title": "🎁 NOUVEAU CODE NTE !",
@@ -35,7 +41,7 @@ def send_code(code):
                     }
                 ],
                 "footer": {
-                    "text": "Anteiku Hoyo codes • Malva"
+                    "text": "NTE Code Bot • Source : NTEBuild"
                 }
             }
         ]
