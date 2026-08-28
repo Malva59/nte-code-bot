@@ -19,7 +19,8 @@ def send_code(code):
             {
                 "title": "🎁 NOUVEAU CODE NTE !",
                 "description": (
-                    "Un nouveau code pour **Neverness to Everness** vient d'être détecté !"
+                    "Un nouveau code pour **Neverness to Everness** "
+                    "vient d'être détecté !"
                 ),
                 "fields": [
                     {
@@ -31,29 +32,11 @@ def send_code(code):
                         "name": "🎁 Récompenses",
                         "value": "Récompenses disponibles en jeu.",
                         "inline": False
-                    },
-                    {
-                        "name": "⚡ Statut",
-                        "value": "🟢 Code actif",
-                        "inline": True
                     }
                 ],
                 "footer": {
                     "text": "Anteiku Hoyo codes • Malva"
                 }
-            }
-        ],
-        "components": [
-            {
-                "type": 1,
-                "components": [
-                    {
-                        "type": 2,
-                        "style": 5,
-                        "label": "❓ Comment utiliser",
-                        "url": "https://www.ntebuild.com/codes"
-                    }
-                ]
             }
         ]
     }
