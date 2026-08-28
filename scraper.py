@@ -1,5 +1,6 @@
 from playwright.sync_api import sync_playwright
 from database import init_database, is_new_code, save_code
+from discord_bot import send_code
 
 URL = "https://www.ntebuild.com/codes"
 
@@ -76,8 +77,16 @@ if __name__ == "__main__":
     for code in codes:
         if is_new_code(code):
             print(f"[NEW] Nouveau code : {code}")
+
             save_code(code)
             new_codes.append(code)
+
+            try:
+                send_code(code)
+            except Exception as error:
+                print(f"[ERROR] Impossible d'envoyer {code} sur Discord :")
+                print(error)
+
         else:
             print(f"[OLD] Code déjà connu : {code}")
 
