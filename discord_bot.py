@@ -39,7 +39,7 @@ def send_code(code):
                     }
                 ],
                 "footer": {
-                    "text": "NTE Code Bot • Source : NTEBuild"
+                    "text": "Anteiku Hoyo codes • Malva"
                 }
             }
         ],
@@ -67,18 +67,3 @@ def send_code(code):
 
     response.raise_for_status()
 
-    # Message séparé sous l'embed pour faciliter la copie
-    copy_data = {
-        "content": f"📋 **Code à copier :**\n```{code}```"
-    }
-
-    response = requests.post(
-        DISCORD_URL,
-        headers=headers,
-        json=copy_data,
-        timeout=20
-    )
-
-    response.raise_for_status()
-
-    print(f"[DISCORD] Code envoyé : {code}")
