@@ -11,7 +11,17 @@ def get_codes():
         page = browser.new_page()
 
         print("Ouverture de NTEBuild...")
-        page.goto(URL, wait_until="networkidle")
+
+        page.goto(
+            URL,
+            wait_until="domcontentloaded",
+            timeout=60000
+        )
+
+        page.wait_for_selector(
+            "h2",
+            timeout=30000
+        )
 
         codes = page.locator("h2, h3").evaluate_all("""
             elements => {
